@@ -1,4 +1,7 @@
 import * as mongoose from "mongoose";
+import mongooseSequence from "mongoose-sequence";
+
+const AutoIncrement = mongooseSequence(mongoose);
 
 const productSchema = new mongoose.Schema(
     {
@@ -43,6 +46,8 @@ const productSchema = new mongoose.Schema(
         toJSON: { getters: true }
     }
 );
+
+productSchema.plugin(AutoIncrement, { inc_field: "id", start_seq: 0 });
 
 const Product = mongoose.model("Product", productSchema);
 

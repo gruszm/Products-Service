@@ -12,17 +12,17 @@ chai.use(chaiAsPromised);
 describe("Product Service", () => {
     let mongoMemoryServer, mongooseConnection;
 
-    before(async () => {
-        mongoMemoryServer = await MongoMemoryServer.create();
-        mongooseConnection = await mongoose.connect(mongoMemoryServer.getUri());
-    });
-
-    after(async () => {
-        await mongooseConnection.disconnect();
-        await mongoMemoryServer.stop();
-    });
-
     describe("Add Product method", () => {
+
+        before(async () => {
+            mongoMemoryServer = await MongoMemoryServer.create();
+            mongooseConnection = await mongoose.connect(mongoMemoryServer.getUri());
+        });
+
+        after(async () => {
+            await mongooseConnection.disconnect();
+            await mongoMemoryServer.stop();
+        });
 
         afterEach(async () => {
             await Product.deleteMany();
@@ -109,6 +109,38 @@ describe("Product Service", () => {
             const productDb = await expect(addProduct(productDetails)).to.be.fulfilled;
 
             expect(productDb.name).to.be.equal("product name");
+        });
+    });
+
+    describe("Get product by ID method (ID as a Number)", () => {
+
+        before(async () => {
+            mongoMemoryServer = await MongoMemoryServer.create();
+            mongooseConnection = await mongoose.connect(mongoMemoryServer.getUri());
+
+            const productDetails = { name: "product name", category: 0 };
+
+            await expect(addProduct(productDetails)).to.be.fulfilled;
+            await expect(Product.countDocuments()).to.eventually.be.equal(1);
+        });
+
+        after(async () => {
+            await Product.deleteMany();
+            await mongooseConnection.disconnect();
+            await mongoMemoryServer.stop();
+        });
+
+        it("should return product from the database with given ID", async () => {
+            const productDb = await getProductById(0);
+
+            expect(productDb).to.not.be.null;
+            expect(productDb.id).to.be.equal(0);
+        });
+
+        it("should return null when product with given ID does not exist", async () => {
+            const productDb = await getProductById(1);
+
+            expect(productDb).to.be.null;
         });
     });
 });

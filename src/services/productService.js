@@ -1,7 +1,7 @@
 import { Product } from '../models/productModel.js';
 
 async function getProductById(id) {
-    return await Product.findById(id);
+    return await Product.findOne({ id: id });
 }
 
 async function addProduct(productDetails) {

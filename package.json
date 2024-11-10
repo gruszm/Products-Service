@@ -13,7 +13,8 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.1",
-    "mongoose": "^8.8.0"
+    "mongoose": "^8.8.0",
+    "mongoose-sequence": "^6.0.1"
   },
   "devDependencies": {
     "chai": "^5.1.2",
