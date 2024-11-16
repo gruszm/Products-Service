@@ -14,10 +14,10 @@ async function getAllProducts() {
     return await Product.find();
 }
 
-async function deleteById(id) {
+async function deleteProductById(id) {
     const deleteResult = await Product.deleteOne({ id: id });
 
     return deleteResult.deletedCount;
 }
 
-export { getProductById, addProduct, getAllProducts, deleteById };
+export { getProductById, addProduct, getAllProducts, deleteProductById };

@@ -1,4 +1,4 @@
-import { getProductById, addProduct, deleteById, getAllProducts } from '../../src/services/productService.js';
+import { addProduct, deleteProductById, getAllProducts, getProductById } from '../../src/services/productService.js';
 import { MongoMemoryServer } from "mongodb-memory-server";
 import * as mongoose from 'mongoose';
 import * as chai from "chai";
@@ -167,11 +167,11 @@ describe("Product Service", () => {
         });
 
         it("should delete the product with given ID and return 1 as the deleted count", async () => {
-            await expect(deleteById(0)).to.eventually.be.equal(1);
+            await expect(deleteProductById(0)).to.eventually.be.equal(1);
         });
 
         it("should return 0 as the deleted count when the product with given ID does not exist", async () => {
-            await expect(deleteById(100)).to.eventually.be.equal(0);
+            await expect(deleteProductById(100)).to.eventually.be.equal(0);
         });
     });
 

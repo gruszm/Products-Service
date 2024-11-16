@@ -9,27 +9,35 @@ publicProductRouter.get("/:id", async (req, res) => {
 
         if (productDb === null) {
             res.status(404).json({ message: `Product with given ID: ${req.params.id} not found.` });
+
+            return;
         }
 
         res.status(200).json(productDb);
     }
     catch (error) {
+        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
         res.status(500).json({ message: "Internal server error." });
     }
 });
 
 publicProductRouter.get("/", async (req, res) => {
     try {
-        const allProducts = await ProductService.getAll();
+        const allProducts = await ProductService.getAllProducts();
 
         res.status(200).json(allProducts);
     }
     catch (error) {
+        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
         res.status(500).json({ message: "Internal server error." });
     }
 });
 
 publicProductRouter.post("/", async (req, res) => {
+    console.log("Received request body:", req.body);
+
     try {
         const productDetails = {
             name: req.body.name,
@@ -45,6 +53,8 @@ publicProductRouter.post("/", async (req, res) => {
         if (error.name === "ValidationError") {
             res.status(400).json({ message: error.message });
         } else {
+            console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
             res.status(500).json({ message: "Internal server error." });
         }
     }
@@ -62,6 +72,8 @@ publicProductRouter.delete("/:id", async (req, res) => {
             res.status(200).json({ message: `Product with ID: ${productId} has been deleted.` });
         }
     } catch (error) {
+        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
         res.status(500).json({ message: "Internal server error." });
     }
 });
