@@ -1,4 +1,4 @@
-import { getProductById, addProduct } from '../../src/services/productService.js';
+import { getProductById, addProduct, deleteById, getAllProducts } from '../../src/services/productService.js';
 import { MongoMemoryServer } from "mongodb-memory-server";
 import * as mongoose from 'mongoose';
 import * as chai from "chai";
@@ -12,7 +12,7 @@ chai.use(chaiAsPromised);
 describe("Product Service", () => {
     let mongoMemoryServer, mongooseConnection;
 
-    describe("Add Product method", () => {
+    describe("Add product method", () => {
 
         before(async () => {
             mongoMemoryServer = await MongoMemoryServer.create();
@@ -51,7 +51,7 @@ describe("Product Service", () => {
         });
 
         it("should add new product", async () => {
-            const productDetails = { name: "product name", price: 10.00, amount: 10, category: 0 };
+            const productDetails = { name: "product name", price: 10.00, amount: 10, categoryId: 0 };
 
             await expect(addProduct(productDetails)).to.not.be.rejected;
 
@@ -61,7 +61,7 @@ describe("Product Service", () => {
         });
 
         it("should add new product and not throw when invoked without price and amount", async () => {
-            const productDetails = { name: "product name", category: 0 };
+            const productDetails = { name: "product name", categoryId: 0 };
 
             const productDb = await expect(addProduct(productDetails)).to.be.fulfilled;
             const numberOfProductsInDb = await Product.countDocuments();
@@ -72,31 +72,31 @@ describe("Product Service", () => {
         });
 
         it("should throw ValidationError when invoked with negative amount", async () => {
-            const productDetails = { name: "product name", category: 0, amount: -1 };
+            const productDetails = { name: "product name", categoryId: 0, amount: -1 };
 
             await expect(addProduct(productDetails)).to.be.rejectedWith(ValidationError, "Amount cannot be negative");
         });
 
         it("should throw ValidationError when invoked with floating point amount", async () => {
-            const productDetails = { name: "product name", category: 0, amount: 5.5 };
+            const productDetails = { name: "product name", categoryId: 0, amount: 5.5 };
 
             await expect(addProduct(productDetails)).to.be.rejectedWith(ValidationError, "The value must be an integer");
         });
 
         it("should throw ValidationError when invoked with negative category", async () => {
-            const productDetails = { name: "product name", category: -1, amount: 1 };
+            const productDetails = { name: "product name", categoryId: -1, amount: 1 };
 
             await expect(addProduct(productDetails)).to.be.rejectedWith(ValidationError, "Category ID cannot be negative");
         });
 
         it("should throw ValidationError when invoked with floating point category", async () => {
-            const productDetails = { name: "product name", category: 1.23, amount: 1 };
+            const productDetails = { name: "product name", categoryId: 1.23, amount: 1 };
 
             await expect(addProduct(productDetails)).to.be.rejectedWith(ValidationError, "ID must be an integer");
         });
 
         it("should ignore decimals in price after 2nd decimal", async () => {
-            const productDetails = { name: "product name", category: 0, price: 10.001 };
+            const productDetails = { name: "product name", categoryId: 0, price: 10.001 };
 
             const productDb = await expect(addProduct(productDetails)).to.be.fulfilled;
 
@@ -104,7 +104,7 @@ describe("Product Service", () => {
         });
 
         it("should trim the name of the product", async () => {
-            const productDetails = { name: "      product name   ", category: 0 };
+            const productDetails = { name: "      product name   ", categoryId: 0 };
 
             const productDb = await expect(addProduct(productDetails)).to.be.fulfilled;
 
@@ -112,13 +112,13 @@ describe("Product Service", () => {
         });
     });
 
-    describe("Get product by ID method (ID as a Number)", () => {
+    describe("Get product by ID method", () => {
 
         before(async () => {
             mongoMemoryServer = await MongoMemoryServer.create();
             mongooseConnection = await mongoose.connect(mongoMemoryServer.getUri());
 
-            const productDetails = { name: "product name", category: 0 };
+            const productDetails = { name: "product name", categoryId: 0 };
 
             await expect(addProduct(productDetails)).to.be.fulfilled;
             await expect(Product.countDocuments()).to.eventually.be.equal(1);
@@ -141,6 +141,82 @@ describe("Product Service", () => {
             const productDb = await getProductById(1);
 
             expect(productDb).to.be.null;
+        });
+    });
+
+    describe("Delete product by ID method", () => {
+        const productDetails = { name: "product name", categoryId: 0 };
+
+        before(async () => {
+            mongoMemoryServer = await MongoMemoryServer.create();
+            mongooseConnection = await mongoose.connect(mongoMemoryServer.getUri());
+        });
+
+        after(async () => {
+            await mongooseConnection.disconnect();
+            await mongoMemoryServer.stop();
+        });
+
+        beforeEach(async () => {
+            await expect(addProduct(productDetails)).to.be.fulfilled;
+            await expect(Product.countDocuments()).to.eventually.be.equal(1);
+        });
+
+        afterEach(async () => {
+            await Product.deleteMany();
+        });
+
+        it("should delete the product with given ID and return 1 as the deleted count", async () => {
+            await expect(deleteById(0)).to.eventually.be.equal(1);
+        });
+
+        it("should return 0 as the deleted count when the product with given ID does not exist", async () => {
+            await expect(deleteById(100)).to.eventually.be.equal(0);
+        });
+    });
+
+    describe("Get all products method", () => {
+
+        before(async () => {
+            mongoMemoryServer = await MongoMemoryServer.create();
+            mongooseConnection = await mongoose.connect(mongoMemoryServer.getUri());
+        });
+
+        after(async () => {
+            await mongooseConnection.disconnect();
+            await mongoMemoryServer.stop();
+        });
+
+        beforeEach(async () => {
+            const productsDetails = [
+                { name: "product 1", categoryId: 0 },
+                { name: "product 2", categoryId: 0 },
+                { name: "product 3", categoryId: 0 },
+                { name: "product 4", categoryId: 0 },
+                { name: "product 5", categoryId: 0 }
+            ];
+
+            for (let i = 0; i < productsDetails.length; i++) {
+                await expect(addProduct(productsDetails[i])).to.be.fulfilled;
+            }
+
+            await expect(Product.countDocuments()).to.be.eventually.equal(5);
+        });
+
+        afterEach(async () => {
+            await Product.deleteMany();
+        });
+
+        it("should return a list of all products contained in the database", async () => {
+            const productsInDb = await getAllProducts();
+
+            expect(productsInDb.length).to.be.equal(5);
+
+            for (let i = 0; i < productsInDb.length; i++) {
+                const currentProductName = `product ${i + 1}`;
+
+                expect(productsInDb[i].name).to.be.equal(currentProductName);
+            }
         });
     });
 });

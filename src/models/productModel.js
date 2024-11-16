@@ -32,7 +32,7 @@ const productSchema = new mongoose.Schema(
                 message: "The value must be an integer, got {VALUE}"
             }
         },
-        category: {
+        categoryId: {
             type: Number,
             required: true,
             min: [0, "Category ID cannot be negative, got {VALUE}"],

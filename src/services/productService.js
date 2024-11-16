@@ -10,4 +10,14 @@ async function addProduct(productDetails) {
     return await productToSave.save();
 }
 
-export { getProductById, addProduct };
+async function getAllProducts() {
+    return await Product.find();
+}
+
+async function deleteById(id) {
+    const deleteResult = await Product.deleteOne({ id: id });
+
+    return deleteResult.deletedCount;
+}
+
+export { getProductById, addProduct, getAllProducts, deleteById };
