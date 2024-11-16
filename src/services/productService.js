@@ -1,7 +1,7 @@
 import { Product } from '../models/productModel.js';
 
 async function getProductById(id) {
-    return await Product.findOne({ id: id });
+    return await Product.findOne({ id: id }).select("-__v -_id");
 }
 
 async function addProduct(productDetails) {
@@ -11,7 +11,7 @@ async function addProduct(productDetails) {
 }
 
 async function getAllProducts() {
-    return await Product.find();
+    return await Product.find().select("-__v -_id");
 }
 
 async function deleteProductById(id) {
