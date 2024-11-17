@@ -36,8 +36,6 @@ publicProductRouter.get("/", async (req, res) => {
 });
 
 publicProductRouter.post("/", async (req, res) => {
-    console.log("Received request body:", req.body);
-
     try {
         const productDetails = {
             name: req.body.name,
@@ -63,7 +61,7 @@ publicProductRouter.post("/", async (req, res) => {
 publicProductRouter.delete("/:id", async (req, res) => {
     try {
         const productId = req.params.id;
-        const deletedCount = await ProductService.deleteById(productId);
+        const deletedCount = await ProductService.deleteProductById(productId);
 
         if (deletedCount === 0) {
             res.status(404).json({ message: `Product with given ID: ${productId} not found.` });
