@@ -3,7 +3,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import * as mongoose from 'mongoose';
 import * as chai from "chai";
 import chaiAsPromised from 'chai-as-promised';
-import { Product } from '../../src/models/productModel.js';
+import Product from '../../src/models/productModel.js';
 const { expect } = chai;
 const { ValidationError } = mongoose.Error;
 

@@ -1,13 +1,39 @@
-import { Product } from '../models/productModel.js';
+import Product from '../models/productModel.js';
+import Image from '../models/imageModel.js';
+import mongoose from 'mongoose';
 
 async function getProductById(id) {
     return await Product.findOne({ id: id }).select("-__v -_id");
 }
 
-async function addProduct(productDetails) {
-    const productToSave = new Product(productDetails);
+async function addProduct(productDetails, imagesDetails) {
+    const session = await mongoose.startSession();
 
-    return await productToSave.save();
+    try {
+        session.startTransaction();
+
+        const savedProduct = await new Product(productDetails).save({ session });
+
+        imagesDetails.forEach(image => {
+            image.productId = savedProduct._id;
+        });
+
+        const savedImages = await Image.insertMany(imagesDetails, { session });
+
+        await Product.updateOne(
+            { _id: savedProduct._id },
+            { $set: { imageIds: savedImages.map(i => i._id) } },
+            { session }
+        );
+
+        await session.commitTransaction();
+    } catch (error) {
+        await session.abortTransaction();
+
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 }
 
 async function getAllProducts() {

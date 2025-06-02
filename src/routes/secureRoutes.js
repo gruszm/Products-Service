@@ -1,18 +1,25 @@
 import { Router } from "express";
 import * as ProductService from "../services/productService.js";
 import { StatusCodes as HttpStatus } from "http-status-codes";
+import multer from "multer";
 
 const secureProductRouter = new Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
-secureProductRouter.post("/", async (req, res) => {
+function checkUserHeader(req, res, next) {
     if (!req.headers["x-user"]) {
         res.status(HttpStatus.BAD_REQUEST).json({ message: "User header is not present." });
 
         return;
     }
+    else {
+        next();
+    }
+}
 
+secureProductRouter.post("/", checkUserHeader, upload.array("images"), async (req, res) => {
     const userHeader = JSON.parse(req.headers["x-user"]);
-    
+
     if (!userHeader.hasElevatedRights) {
         res.status(HttpStatus.UNAUTHORIZED).json({ message: "User is not authorized to add a new product." });
 
@@ -27,9 +34,15 @@ secureProductRouter.post("/", async (req, res) => {
             categoryId: req.body.categoryId
         };
 
-        const productDb = await ProductService.addProduct(productDetails);
+        const images = req.files.map(image => ({
+            data: image.buffer,
+            mimeType: image.mimetype,
+            originalName: image.originalname
+        }));
 
-        res.status(201).json(productDb);
+        await ProductService.addProduct(productDetails, images);
+
+        res.status(201).end();
     } catch (error) {
         if (error.name === "ValidationError") {
             res.status(400).json({ message: error.message });
@@ -41,13 +54,7 @@ secureProductRouter.post("/", async (req, res) => {
     }
 });
 
-secureProductRouter.delete("/:id", async (req, res) => {
-    if (!req.headers["x-user"]) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: "User header is not present." });
-
-        return;
-    }
-
+secureProductRouter.delete("/:id", checkUserHeader, async (req, res) => {
     const userHeader = JSON.parse(req.headers["x-user"]);
 
     if (!userHeader.hasElevatedRights) {

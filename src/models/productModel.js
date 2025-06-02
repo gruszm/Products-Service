@@ -40,15 +40,16 @@ const productSchema = new mongoose.Schema(
                 validator: Number.isInteger,
                 message: "The ID must be an integer, got {VALUE}"
             }
-        }
+        },
+        imageIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }]
     },
     {
         toJSON: { getters: true }
     }
 );
 
-productSchema.plugin(AutoIncrement, { inc_field: "id", start_seq: 0 });
+productSchema.plugin(AutoIncrement, { id: "product_schema_id", inc_field: "id", start_seq: 0 });
 
 const Product = mongoose.model("Product", productSchema);
 
-export { Product };
+export default Product;
