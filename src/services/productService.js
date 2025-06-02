@@ -14,17 +14,19 @@ async function addProduct(productDetails, imagesDetails) {
 
         const savedProduct = await new Product(productDetails).save({ session });
 
-        imagesDetails.forEach(image => {
-            image.productId = savedProduct._id;
-        });
+        if (imagesDetails) {
+            imagesDetails.forEach(image => {
+                image.productId = savedProduct._id;
+            });
 
-        const savedImages = await Image.insertMany(imagesDetails, { session });
+            const savedImages = await Image.insertMany(imagesDetails, { session });
 
-        await Product.updateOne(
-            { _id: savedProduct._id },
-            { $set: { imageIds: savedImages.map(i => i._id) } },
-            { session }
-        );
+            await Product.updateOne(
+                { _id: savedProduct._id },
+                { $set: { imageIds: savedImages.map(i => i._id) } },
+                { session }
+            );
+        }
 
         await session.commitTransaction();
     } catch (error) {

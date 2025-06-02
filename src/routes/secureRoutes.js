@@ -34,11 +34,15 @@ secureProductRouter.post("/", checkUserHeader, upload.array("images"), async (re
             categoryId: req.body.categoryId
         };
 
-        const images = req.files.map(image => ({
-            data: image.buffer,
-            mimeType: image.mimetype,
-            originalName: image.originalname
-        }));
+        let images = null;
+
+        if (req.files) {
+            images = req.files.map(image => ({
+                data: image.buffer,
+                mimeType: image.mimetype,
+                originalName: image.originalname
+            }));
+        }
 
         await ProductService.addProduct(productDetails, images);
 
