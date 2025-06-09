@@ -3,7 +3,26 @@ import Image from '../models/imageModel.js';
 import mongoose from 'mongoose';
 
 async function getProductById(id) {
-    return await Product.findOne({ id: id }).select("-__v -_id");
+
+    // Retrieve the product
+    const product = await Product.findOne({ id: id }).select("-__v").lean();
+
+    if (!product) {
+        return null;
+    }
+
+    // Retrieve images asssigned to this product
+    const images = await Image.find({ productId: product._id }).select("-__v");
+
+    // Extract image IDs and assign them to the product object
+    if (images) {
+        product.imageIds = images.map(i => i.id);
+    }
+
+    // Delete _id and return modified product
+    delete product._id;
+
+    return product;
 }
 
 async function addProduct(productDetails, imagesDetails) {
@@ -39,7 +58,28 @@ async function addProduct(productDetails, imagesDetails) {
 }
 
 async function getAllProducts() {
-    return await Product.find().select("-__v -_id");
+
+    // Retrieve the products
+    const products = await Product.find().select("-__v").lean();
+
+    if (!products || products.length === 0) {
+        return null;
+    }
+
+    // Retrieve images asssigned to each product
+    for (let i = 0; i < products.length; i++) {
+        const images = await Image.find({ productId: products[i]._id }).select("-__v");
+
+        // Extract image IDs and assign them to the product object
+        if (images && images.length > 0) {
+            products[i].imageIds = images.map(i => i.id);
+        }
+    }
+
+    // Delete _id for each product and return modified array
+    products.forEach(p => delete p._id);
+
+    return products;
 }
 
 async function deleteProductById(id) {

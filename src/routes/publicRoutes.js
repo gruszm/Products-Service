@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as ProductService from "../services/productService.js";
+import * as ImageService from "../services/imageService.js";
 
 const publicProductRouter = new Router();
 
@@ -27,6 +28,25 @@ publicProductRouter.get("/", async (req, res) => {
         const allProducts = await ProductService.getAllProducts();
 
         res.status(200).json(allProducts);
+    }
+    catch (error) {
+        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
+        res.status(500).json({ message: "Internal server error." });
+    }
+});
+
+publicProductRouter.get("/images/:id", async (req, res) => {
+    try {
+        const imageDb = await ImageService.getImageById(req.params.id);
+
+        if (imageDb === null) {
+            res.status(404).json({ message: `Image with given ID: ${req.params.id} not found.` });
+
+            return;
+        }
+
+        res.status(200).contentType(imageDb.mimeType).send(imageDb.data);
     }
     catch (error) {
         console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
