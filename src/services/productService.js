@@ -34,11 +34,14 @@ async function addProduct(productDetails, imagesDetails) {
         const savedProduct = await new Product(productDetails).save({ session });
 
         if (imagesDetails) {
-            imagesDetails.forEach(image => {
-                image.productId = savedProduct._id;
-            });
-
-            const savedImages = await Image.insertMany(imagesDetails, { session });
+            
+            const savedImages = await Promise.all(
+                imagesDetails.map(img => {
+                    img.productId = savedProduct._id;
+                    
+                    return new Image(img).save({ session });
+                })
+            );
 
             await Product.updateOne(
                 { _id: savedProduct._id },
