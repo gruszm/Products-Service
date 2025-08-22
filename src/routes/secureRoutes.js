@@ -8,7 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 function checkUserHeader(req, res, next) {
     if (!req.headers["x-user"]) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: "User header is not present." });
+        res.status(HttpStatus.BAD_REQUEST).json({ message: "User header is missing." });
 
         return;
     }
