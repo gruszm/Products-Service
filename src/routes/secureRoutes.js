@@ -1,9 +1,9 @@
-import { Router } from "express";
+import * as express from "express";
 import * as ProductService from "../services/productService.js";
 import { StatusCodes as HttpStatus } from "http-status-codes";
 import multer from "multer";
 
-const secureProductRouter = new Router();
+const secureProductRouter = new express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 function checkUserHeader(req, res, next) {
@@ -16,6 +16,50 @@ function checkUserHeader(req, res, next) {
         next();
     }
 }
+
+/**
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+secureProductRouter.put("/decrease", checkUserHeader, async (req, res) => {
+    const userHeader = JSON.parse(req.headers["x-user"]);
+
+    if (!userHeader.hasElevatedRights) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ message: "User is not authorized to decrease the amount of a product." });
+
+        return;
+    }
+
+    if (!req.body.productId || !req.body.amount) {
+        res.status(HttpStatus.BAD_REQUEST).json({ message: "Product ID and amount are required." });
+
+        return;
+    }
+
+    if (!req.body.productId < 0 || req.body.amount <= 0) {
+        res.status(HttpStatus.BAD_REQUEST).json({ message: "Product ID cannot be negative, amount must be positive." });
+
+        return;
+    }
+
+    try {
+        const updatedProduct = await ProductService.decreaseProductAmount(req.body.productId, req.body.amount);
+
+        if (!updatedProduct) {
+            throw new Error("Product's amount could not be decreased.");
+        }
+
+        res.status(HttpStatus.OK).send();
+    } catch (error) {
+        if (error instanceof ProductService.DecrementHigherThanAmountError) {
+            res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+        } else {
+            console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
+        }
+    }
+});
 
 secureProductRouter.post("/", checkUserHeader, upload.array("images"), async (req, res) => {
     const userHeader = JSON.parse(req.headers["x-user"]);
@@ -46,14 +90,14 @@ secureProductRouter.post("/", checkUserHeader, upload.array("images"), async (re
 
         await ProductService.addProduct(productDetails, images);
 
-        res.status(201).end();
+        res.status(HttpStatus.CREATED).end();
     } catch (error) {
         if (error.name === "ValidationError") {
-            res.status(400).json({ message: error.message });
+            res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
         } else {
             console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
-            res.status(500).json({ message: "Internal server error." });
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
         }
     }
 });
@@ -72,15 +116,15 @@ secureProductRouter.delete("/:id", checkUserHeader, async (req, res) => {
         const deletedCount = await ProductService.deleteProductById(productId);
 
         if (deletedCount === 0) {
-            res.status(404).json({ message: `Product with given ID: ${productId} not found.` });
+            res.status(HttpStatus.NOT_FOUND).json({ message: `Product with given ID: ${productId} not found.` });
         }
         else {
-            res.status(200).json({ message: `Product with ID: ${productId} has been deleted.` });
+            res.status(HttpStatus.OK).json({ message: `Product with ID: ${productId} has been deleted.` });
         }
     } catch (error) {
         console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
-        res.status(500).json({ message: "Internal server error." });
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
     }
 });
 

@@ -44,7 +44,8 @@ const productSchema = new mongoose.Schema(
         imageIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Image" }]
     },
     {
-        toJSON: { getters: true }
+        toJSON: { getters: true },
+        toObject: { getters: true }
     }
 );
 

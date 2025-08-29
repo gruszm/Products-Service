@@ -23,6 +23,25 @@ publicProductRouter.get("/:id", async (req, res) => {
     }
 });
 
+publicProductRouter.get("/price/:id", async (req, res) => {
+    try {
+        const productDbPrice = await ProductService.getProductPriceByProductId(req.params.id);
+
+        if (productDbPrice === null) {
+            res.status(404).json({ message: `Product with given ID: ${req.params.id} not found.` });
+
+            return;
+        }
+
+        res.status(200).json(productDbPrice);
+    }
+    catch (error) {
+        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+
+        res.status(500).json({ message: "Internal server error." });
+    }
+});
+
 publicProductRouter.get("/", async (req, res) => {
     try {
         const allProducts = await ProductService.getAllProducts();
