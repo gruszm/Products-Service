@@ -17,7 +17,7 @@ publicProductRouter.get("/:id", async (req, res) => {
         res.status(200).json(productDb);
     }
     catch (error) {
-        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+        console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
         res.status(500).json({ message: "Internal server error." });
     }
@@ -36,7 +36,7 @@ publicProductRouter.get("/price/:id", async (req, res) => {
         res.status(200).json(productDbPrice);
     }
     catch (error) {
-        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+        console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
         res.status(500).json({ message: "Internal server error." });
     }
@@ -49,7 +49,7 @@ publicProductRouter.get("/", async (req, res) => {
         res.status(200).json(allProducts);
     }
     catch (error) {
-        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+        console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
         res.status(500).json({ message: "Internal server error." });
     }
@@ -68,7 +68,7 @@ publicProductRouter.get("/images/:id", async (req, res) => {
         res.status(200).contentType(imageDb.mimeType).send(imageDb.data);
     }
     catch (error) {
-        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+        console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
         res.status(500).json({ message: "Internal server error." });
     }

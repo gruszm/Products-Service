@@ -54,7 +54,7 @@ secureProductRouter.put("/decrease", checkUserHeader, async (req, res) => {
         if (error instanceof ProductService.DecrementHigherThanAmountError) {
             res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
         } else {
-            console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+            console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
         }
@@ -95,7 +95,7 @@ secureProductRouter.post("/", checkUserHeader, upload.array("images"), async (re
         if (error.name === "ValidationError") {
             res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
         } else {
-            console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+            console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
         }
@@ -122,7 +122,7 @@ secureProductRouter.delete("/:id", checkUserHeader, async (req, res) => {
             res.status(HttpStatus.OK).json({ message: `Product with ID: ${productId} has been deleted.` });
         }
     } catch (error) {
-        console.error(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
+        console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
     }
