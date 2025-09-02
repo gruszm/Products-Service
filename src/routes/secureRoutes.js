@@ -30,13 +30,13 @@ secureProductRouter.put("/decrease", checkUserHeader, async (req, res) => {
         return;
     }
 
-    if (!req.body.productId || !req.body.amount) {
+    if (req.body.productId === undefined || req.body.amount === undefined) {
         res.status(HttpStatus.BAD_REQUEST).json({ message: "Product ID and amount are required." });
 
         return;
     }
 
-    if (!req.body.productId < 0 || req.body.amount <= 0) {
+    if (req.body.productId < 0 || req.body.amount <= 0) {
         res.status(HttpStatus.BAD_REQUEST).json({ message: "Product ID cannot be negative, amount must be positive." });
 
         return;
@@ -56,7 +56,7 @@ secureProductRouter.put("/decrease", checkUserHeader, async (req, res) => {
         } else {
             console.log(`Error on endpoint: ${req.baseUrl + req.url}\n${error.message}`);
 
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal server error." });
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
         }
     }
 });
